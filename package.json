@@ -1,0 +1,29 @@
+{
+  "name": "promo-tool",
+  "version": "1.0.0",
+  "description": "tool to automatic release promotions",
+  "main": "index.js",
+  "bin": {
+    "promo": "./index.js"
+  },
+  "scripts": {
+    "test": "mocha -w tests/**/*.spec.js"
+  },
+  "author": "enhui zhu",
+  "license": "ISC",
+  "dependencies": {
+    "color": "^2.0.0",
+    "commander": "^2.11.0",
+    "gulp-util": "^3.0.8",
+    "jsonfile": "^3.0.1",
+    "lodash": "^4.17.4",
+    "promo-builder": "^2.0.1"
+  },
+  "devDependencies": {
+    "chai": "^4.1.0",
+    "colors": "^1.1.2",
+    "mocha": "^3.4.2",
+    "prompt": "^1.0.0",
+    "run-sequence": "^2.1.0"
+  }
+}
