@@ -20,7 +20,7 @@ class Testinfo {
         
         if (PromoRcHelper.isPromoRcExist(this.path)) {
             this.configRc = PromoRcHelper.getConfigFromPromoRc(this.path);
-            const venture = pathHelper.getVenturePath(this.venture);
+            const venture = pathHelper.getVenturePathName(this.venture);
             logHelper.log(Testinfo.generateTestinfo(
                 venture, 
                 this.date,

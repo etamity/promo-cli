@@ -1,6 +1,6 @@
 'use strict';
 
-const Ventures = require('../configs/ventures');
+const Ventures = require('../constants/ventures');
 const Config = require('../configs/config');
 
 module.exports = {
@@ -17,14 +17,14 @@ module.exports = {
             typePath = Config.PROMOTION_FOLDER;
             break;
         }
-        return Config.CLIENT_CONTENT_PATH + '/' + Ventures[venture].path + '/' + typePath;
+        return Config.CLIENT_CONTENT_PATH + '/' + Ventures[venture].path + '/' + typePath + '/';
     },
 
     getPromotionPath() {
         return config.PROMOTIONS_SOURCE_PATH;
     },
 
-    getVenturePath(venture) {
+    getVenturePathName(venture) {
         return Ventures[venture].path;
     }
 }

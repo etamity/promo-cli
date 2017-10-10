@@ -19,7 +19,7 @@ class Release {
         this.setupEvents();
         this.path = process.cwd();
         this.venture = taskHelper.getVentureFromScss(this.path);
-        this.venturePath = this.venture ? pathHelper.getVenturePath(this.venture) : null;
+        this.venturePath = this.venture ? pathHelper.getPath(this.venture) : null;
         this.commit = commit;
         this.config = promoRcHelper.getConfigFromPromoRc(this.path);
         this.onFinished = onFinished;
