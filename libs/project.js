@@ -63,7 +63,8 @@ class project {
 
         PromptHelper.get('answer', TaskHelper.listTemplates(templates)).then(answer => {
             try{
-                if (!isNaN(answer) && answer >= 0 && answer < templates.length)
+                console.log(answer, templates.length);
+                if (!isNaN(answer) && answer >= 0 && answer <= templates.length)
                 {
                     this.template = templates[answer - 1];
                     this.copyTemplate();
