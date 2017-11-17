@@ -8,18 +8,18 @@ const logHelper = require('./helpers/log-helper');
 const MESSAGES = require('./constants/msg');
 const builder = require('./libs/builder');
 const project = require('./libs/project');
-const bundle = require('./libs/bundle');
+const Bundle = require('./libs/bundle');
 const execHelper = require('./helpers/exec-helper');
 
 global.__basedir = __dirname;
 
 function checkConfigExists(callback) {
-     const exist = FileHelper.isFolderExist(__dirname + '/configs/config.js');
-     if (exist) {
-         callback();
-     } else {
+    const exist = FileHelper.isFolderExist(__dirname + '/configs/config.js');
+    if (exist) {
+        callback();
+    } else {
         logHelper.error(MESSAGES.CONFIG_EXIST_MSG);
-     }
+    }
 }
 
 promo.command('new <projectName>')
@@ -48,11 +48,30 @@ promo.command('build [mode]')
         builder.build(mode);
     })
 
-promo.command('bundles')
+promo.command('bundles <mode>')
+    .description('Bundle source files')
+    .action((mode) => {
+        const basePath = process.cwd();
+        const bundle = new Bundle(basePath);
+        if (mode) {
+            if (mode === 'js') {
+                bundle.bundleAllJS();
+            } else if (mode === 'sass') {
+                bundle.buildAllSass();
+            }
+        } else {
+            bundle.bundleAll();
+        }
+
+
+    })
+    
+promo.command('bundle')
     .description('Bundle source files')
     .action(() => {
         const basePath = process.cwd();
-        new bundle(basePath);
+        const bundle = new Bundle(basePath);
+        bundle.bundleTemplate();
     })
 
 promo.command('watch')
@@ -81,7 +100,7 @@ promo.command('serve [mode]')
         execHelper.exec(command, (error, result) => {
             if (!error) {
                 logHelper.log(`Promo server is serving [${mode}] mode ...`);
-            }else{
+            } else {
                 errorHelper.handle(error);
             }
         }, true);
