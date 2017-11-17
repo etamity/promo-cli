@@ -138,7 +138,7 @@ class Bundle {
             const file = [templateName, venture, theme].join('-') + '.css';
             stream.pipe(rename(file)).pipe(gulp.dest(output))
                 .on('data', (chunk) => {
-                    logHelper.log('[sass] starting : ', templateName);
+                    logHelper.log('[sass] starting : ', templateName, 'venture:', venture, 'theme:', theme);
                     logHelper.log('[bundle] proccessing : ', chunk.path);
                 })
                 .on('end', () => {
