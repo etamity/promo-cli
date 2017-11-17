@@ -59,7 +59,7 @@ class project {
 
 
     getTemplate() {
-        const templates = FileHelper.getTemplatesName(this.templatePath);
+        const templates = FileHelper.getTemplateNames(this.templatePath);
 
         PromptHelper.get('answer', TaskHelper.listTemplates(templates)).then(answer => {
             try{

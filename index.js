@@ -8,6 +8,7 @@ const logHelper = require('./helpers/log-helper');
 const MESSAGES = require('./constants/msg');
 const builder = require('./libs/builder');
 const project = require('./libs/project');
+const bundle = require('./libs/bundle');
 const execHelper = require('./helpers/exec-helper');
 
 global.__basedir = __dirname;
@@ -45,6 +46,13 @@ promo.command('build [mode]')
         mode = mode ? mode : 'prod';
         logHelper.log(`Starting [${mode}] build`);
         builder.build(mode);
+    })
+
+promo.command('bundles')
+    .description('Bundle source files')
+    .action(() => {
+        const basePath = process.cwd();
+        new bundle(basePath);
     })
 
 promo.command('watch')

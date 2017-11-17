@@ -5,11 +5,15 @@ const _ = require('lodash');
 const gutil = require('gulp-util');
 
 class LogHelper {
-    static log(msg) {
+    static log() {
+        let args = Array.prototype.slice.call(arguments);
+        const msg = args.join(' ');
         gutil.log(gutil.colors.green(msg));
     }
 
-    static error(msg) {
+    static error() {
+        let args = Array.prototype.slice.call(arguments);
+        const msg = args.join(' ');
         gutil.log(gutil.colors.red(msg));
     }
 

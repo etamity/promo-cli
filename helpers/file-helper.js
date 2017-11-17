@@ -85,9 +85,11 @@ class FileHelper {
         jsonfile.writeFileSync(path, data, {spaces: 2})
     }
 
-    static getTemplatesName(filePath) {
+    static getTemplateNames(filePath) {
         return fs.readdirSync(filePath).filter(v => {
-            return fs.lstatSync(`${filePath}${v}`).isDirectory() && v !== '.git';
+            return fs.lstatSync(`${filePath}${v}`).isDirectory() 
+            && v !== 'node_modules'
+            && v !== '.git' && !v.startsWith('_');
         });
     }
 

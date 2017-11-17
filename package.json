@@ -12,12 +12,24 @@
   "author": "enhui zhu",
   "license": "ISC",
   "dependencies": {
+    "babelify": "^8.0.0",
+    "breakpoint-sass": "^2.7.1",
+    "browserify": "^14.5.0",
     "color": "^2.0.0",
     "commander": "^2.11.0",
+    "gulp-autoprefixer": "^4.0.0",
+    "gulp-eslint": "^4.0.0",
+    "gulp-minify-css": "^1.2.4",
+    "gulp-rename": "^1.2.2",
+    "gulp-sass": "^3.1.0",
+    "gulp-sourcemaps": "~2.6.1",
+    "gulp-uglify": "^3.0.0",
     "gulp-util": "^3.0.8",
     "jsonfile": "^3.0.1",
     "lodash": "^4.17.4",
-    "promo-builder": "^2.0.1"
+    "promo-builder": "^2.0.1",
+    "vinyl-buffer": "^1.0.0",
+    "vinyl-source-stream": "^1.1.0"
   },
   "devDependencies": {
     "chai": "^4.1.0",
