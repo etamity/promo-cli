@@ -48,7 +48,7 @@ promo.command('build [mode]')
         builder.build(mode);
     })
 
-promo.command('bundles <mode>')
+promo.command('bundles [mode]')
     .description('Bundle source files')
     .action((mode) => {
         const basePath = process.cwd();
@@ -65,7 +65,7 @@ promo.command('bundles <mode>')
 
 
     })
-    
+
 promo.command('bundle')
     .description('Bundle source files')
     .action(() => {

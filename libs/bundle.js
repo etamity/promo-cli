@@ -15,6 +15,7 @@ const browserify = require('browserify');
 const babelify = require('babelify');
 const source = require('vinyl-source-stream');
 const buffer = require('vinyl-buffer');
+const replace = require('gulp-replace');
 
 const ventures = ['heartbingo', 'jackpotjoy', 'jackpotjoy-sweden', 'starspins', 'monopoly', 'virgingames', 'botemania'];
 const themes = ['default', 'vip', 'interactive', 'interactive-white', 'starspins']
@@ -35,7 +36,12 @@ class Bundle {
                 if (!isNaN(answer) && answer >= 0 && answer <= templates.length) {
                     const template = templates[answer - 1];
                     logHelper.log(`Bundling [${answer}] ${template} ...`);
-                    this.buildBundleJS(template).then(logHelper.log);
+                    this.buildBundleJS(template).then(result => {
+                        logHelper.log('');
+                        logHelper.log(`******** ${result} ********`);
+                        logHelper.log('');
+                        this.buildAllSass(this.buildTemplateSassIndex(template));
+                    });
                 } else {
                     logHelper.error('Wrong Input! Please input number.');
                     this.bundleTemplate();
@@ -50,10 +56,9 @@ class Bundle {
         const promise = new Promise(this.preprocessJS(templateName));
         return promise;
     }
-    buildBundleSass(templateName, venture, theme) {
+    buildBundleSass(templateName, venture, theme, index) {
         this.totalSassPromisesAmount = 1;
         const settings = {
-            id: 1,
             templateName,
             venture,
             theme
@@ -72,6 +77,7 @@ class Bundle {
             debug: false // enables source maps
         };
         return (resolve, reject) => {
+            const file = [templateName, 'bundle'].join('-') + '.js';
             let error = false;
             const onError = msg => {
                 error = true;
@@ -79,19 +85,18 @@ class Bundle {
                 reject(msg);
             };
             const output = [this.basePath, this.output, 'js'].join('/');
-
-            const file = [templateName, 'bundle'].join('-') + '.js';
             let stream = browserify(browserifyEnv)
                 .transform(babelify, { presets: ['babel-preset-es2015', 'babel-preset-react'] })
                 .bundle()
                 .on('error', onError)
                 .pipe(source('bundle.js'));
-            
+
             stream = stream.pipe(buffer()).pipe(uglify());
             stream.pipe(rename(file))
                 .pipe(gulp.dest(output))
-                .on('readable', () => {
+                .on('data', (chunk) => {
                     logHelper.log('[bundle] starting : ', templateName);
+                    logHelper.log('[bundle] proccessing : ', chunk.path);
                 })
                 .on('end', () => {
                     logHelper.log(`[bundle] [${index}/${this.totalJSPromisesAmount}] complete :`, file);
@@ -100,7 +105,7 @@ class Bundle {
         }
     }
 
-    preprocessSASS(settings) {
+    preprocessSASS(settings, index = 1) {
         const { templateName, venture, theme } = settings;
         return (resolve, reject) => {
             let error = false;
@@ -118,8 +123,13 @@ class Bundle {
 
             const includePaths = { includePaths: ['node_modules/breakpoint-sass/stylesheets', 'node_modules'] };
 
-
-            stream = stream.pipe(sass(includePaths))
+            const variables = {
+                venture: `${venture}`,
+                theme: `${theme}`
+            }
+            stream = stream.pipe(replace(/\$venture(.*)\"(.*)\"\;/g, `$venture: "${venture}";`))
+                .pipe(replace(/\$theme(.*)\"(.*)\"\;/g, `$theme: "${theme}";`))
+                .pipe(sass(includePaths))
                 .on('error', onError)
                 .pipe(prefix)
                 .pipe(minifyCSS());
@@ -127,12 +137,13 @@ class Bundle {
             const output = [this.basePath, this.output, 'css'].join('/');
             const file = [templateName, venture, theme].join('-') + '.css';
             stream.pipe(rename(file)).pipe(gulp.dest(output))
-                .on('readable', () => {
+                .on('data', (chunk) => {
                     logHelper.log('[sass] starting : ', templateName);
+                    logHelper.log('[bundle] proccessing : ', chunk.path);
                 })
                 .on('end', () => {
                     if (!error) {
-                        logHelper.log(`[sass] [${settings.id}/${this.totalSassPromisesAmount}] complete : `, file);
+                        logHelper.log(`[sass] [${index}/${this.totalSassPromisesAmount}] complete : `, file);
                         resolve(file);
                     }
                 });
@@ -140,55 +151,68 @@ class Bundle {
     }
 
     bundleAll() {
-        this.buildAllSass();
-        this.bundleAllJS();
+        const settings = this.buildSassPromisesIndex();
+        this.bundleAllJS().then(() => {
+            this.buildAllSass(settings);
+        });
     }
-
-    buildSassPromisesIndex() {
+    buildTemplateSassIndex(templateName) {
         const promises = [];
-        let id = 0;
-        logHelper.log('[Sass] Building Indexes ...');
-        this.templateNames.forEach(templateName => {
-            ventures.forEach(venture => {
-                themes.forEach(theme => {
-                    id++;
-                    const settings = {
-                        id: id,
-                        templateName,
-                        venture,
-                        theme
-                    };
-                    promises.push(settings);
-                })
+        logHelper.log(`[sass] Building [${templateName}] Indexes ...`);
+        ventures.forEach(venture => {
+            themes.forEach(theme => {
+                const settings = {
+                    templateName,
+                    venture,
+                    theme
+                };
+                promises.push(settings);
             })
         });
+        this.totalSassPromisesAmount = promises.length;
+        return promises;
+    }
+    buildSassPromisesIndex() {
+        let promises = [];
+        logHelper.log('[sass] Building sass Indexes ...');
+        this.templateNames.forEach(templateName => {
+            promises = promises.concat(this.buildTemplateSassIndex(templateName));
+        });
+        this.totalSassPromisesAmount = promises.length;
         return promises;
     }
 
-    buildAllSass() {
-        this.settingsList = this.buildSassPromisesIndex();
+    buildAllSass(settingsList) {
         const promiseSerial = settings =>
             settings.reduce((promise, setting, index) =>
                 promise.then(result => {
-                    const func = this.preprocessSASS(setting);
+                    const func = this.preprocessSASS(setting, index + 1);
+                    if (index === settingsList.length) {
+                        Promise.resolve([]);
+                    }
                     return (new Promise(func)).then(logHelper.log);
                 }),
                 Promise.resolve([]));
-
-        this.totalSassPromisesAmount = this.settingsList.length;
-        promiseSerial(this.settingsList);
+        return promiseSerial(settingsList);
     }
+
     bundleAllJS() {
         const promiseSerial = templateNames =>
             templateNames.reduce((promise, templateName, index) =>
                 promise.then(result => {
                     const func = this.preprocessJS(templateName, index + 1);
-                    return (new Promise(func)).then(logHelper.log);
+
+                    return (new Promise(func)).then((result) => {
+                        logHelper.log(result);
+                        if (index === templateNames.length) {
+                            Promise.resolve([]);
+                        }
+                    });
                 }),
                 Promise.resolve([]));
 
         this.totalJSPromisesAmount = this.templateNames.length;
-        promiseSerial(this.templateNames);
+        return promiseSerial(this.templateNames);
     }
     lintJS() {
         const promiseSerial = templateNames =>
@@ -204,7 +228,7 @@ class Bundle {
     }
     preprocessLintFiles(templateName, index = 1) {
         return (resolve, reject) => {
-
+            const file = [templateName, 'bundle'].join('-') + '.js';
             const fs = require('fs');
             const projectEslintConfigPath = this.getTemplatePath(templateName) + '/.eslintrc';
             const defaultEslintConfigPath = global.__basedir + '/.eslintrc';
@@ -217,7 +241,7 @@ class Bundle {
                 logHelper.error(msg);
                 reject(msg);
             };
-            const file = [templateName, 'bundle'].join('-') + '.js';
+  
             gulp.src([this.getSrcFiles(templateName)])
 
                 // Attach lint output to the eslint property of the file object so it can be used by other modules
